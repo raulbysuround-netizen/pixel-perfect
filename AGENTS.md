@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Scheduling rules live as pure functions in src/lib/agenda.ts (tested in src/test/agenda.test.ts); localStorage access only in src/lib/store.ts — keeps rules testable and storage swappable.
+- Bookings occupy ceil(duration/30) consecutive slots within one block — prevents overlaps for 45-min sessions.
