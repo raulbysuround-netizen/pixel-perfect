@@ -6,10 +6,10 @@ import { SemanaNav, WeekGrid, useSemana } from "@/components/WeekGrid";
 export const Route = createFileRoute("/agenda")({
   head: () => ({
     meta: [
-      { title: "Agenda semanal — Fisio Centro" },
-      { name: "description", content: "Consulta qué franjas están libres esta semana en Fisio Centro." },
-      { property: "og:title", content: "Agenda semanal — Fisio Centro" },
-      { property: "og:description", content: "Consulta qué franjas están libres esta semana en Fisio Centro." },
+      { title: "Agenda semanal — Motio Rehab" },
+      { name: "description", content: "Consulta qué franjas están libres esta semana en Motio Rehab." },
+      { property: "og:title", content: "Agenda semanal — Motio Rehab" },
+      { property: "og:description", content: "Consulta qué franjas están libres esta semana en Motio Rehab." },
     ],
   }),
   component: Agenda,

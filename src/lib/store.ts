@@ -21,11 +21,11 @@ function seed(): Reserva[] {
     id: crypto.randomUUID(), terapiaId, fecha: addDias(lunes, d), horaInicio: hora, nombre, telefono, motivo, estado: "activa",
   });
   return [
-    mk(0, "09:00", "evaluacion", "Lucía Fernández", "611 234 567", "Dolor lumbar tras correr"),
-    mk(1, "10:30", "rehabilitacion", "Marcos Díaz", "622 345 678", "Rodilla, post operatorio"),
-    mk(2, "16:00", "control", "Elena Ruiz", "633 456 789"),
-    mk(3, "12:00", "rehabilitacion", "Javier Moreno", "644 567 890", "Hombro derecho"),
-    mk(4, "17:30", "evaluacion", "Carmen López", "655 678 901", "Cervicalgia"),
+    mk(0, "09:00", "evaluacion", "Lucía Fernández", "55 1234 5678", "Dolor lumbar tras correr"),
+    mk(1, "10:30", "rehabilitacion", "Marcos Díaz", "55 2345 6789", "Rodilla, post operatorio"),
+    mk(2, "16:00", "control", "Elena Ruiz", "33 3456 7890"),
+    mk(3, "12:00", "rehabilitacion", "Javier Moreno", "81 4567 8901", "Hombro derecho"),
+    mk(4, "17:30", "evaluacion", "Carmen López", "55 5678 9012", "Cervicalgia"),
   ];
 }
 

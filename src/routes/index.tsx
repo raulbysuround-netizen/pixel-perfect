@@ -6,9 +6,9 @@ import { crearReserva, useReservas } from "@/lib/store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Reserva tu turno de fisioterapia — Fisio Centro" },
+      { title: "Reserva tu turno de fisioterapia — Motio Rehab" },
       { name: "description", content: "Elige terapia, día y hora libre y confirma tu turno en menos de un minuto." },
-      { property: "og:title", content: "Reserva tu turno de fisioterapia — Fisio Centro" },
+      { property: "og:title", content: "Reserva tu turno de fisioterapia — Motio Rehab" },
       { property: "og:description", content: "Elige terapia, día y hora libre y confirma tu turno en menos de un minuto." },
     ],
   }),

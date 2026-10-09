@@ -51,7 +51,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fisio Centro — Reserva tu turno" },
+      { title: "Motio Rehab — Reserva tu turno" },
       { name: "description", content: "Reserva online tu turno de fisioterapia viendo la agenda real." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -72,7 +72,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es-MX">
       <head><HeadContent /></head>
       <body className="font-sans antialiased">
         {children}
@@ -92,7 +92,7 @@ function RootComponent() {
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3">
           <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold text-primary">
-            <span className="inline-block h-3 w-3 rounded-full bg-accent" /> Fisio Centro
+            <span className="inline-block h-3 w-3 rounded-full bg-accent" /> Motio Rehab
           </Link>
           <nav className="flex gap-1">
             <Link to="/" className={navCls} activeProps={navActive} activeOptions={{ exact: true }}>Reservar</Link>

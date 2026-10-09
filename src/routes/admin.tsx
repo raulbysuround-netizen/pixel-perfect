@@ -8,10 +8,10 @@ import { SemanaNav, WeekGrid, useSemana } from "@/components/WeekGrid";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Panel de la clínica — Fisio Centro" },
-      { name: "description", content: "Gestión interna de turnos de Fisio Centro." },
-      { property: "og:title", content: "Panel de la clínica — Fisio Centro" },
-      { property: "og:description", content: "Gestión interna de turnos de Fisio Centro." },
+      { title: "Panel de la clínica — Motio Rehab" },
+      { name: "description", content: "Gestión interna de turnos de Motio Rehab." },
+      { property: "og:title", content: "Panel de la clínica — Motio Rehab" },
+      { property: "og:description", content: "Gestión interna de turnos de Motio Rehab." },
       { name: "robots", content: "noindex" },
     ],
   }),

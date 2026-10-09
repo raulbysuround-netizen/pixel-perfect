@@ -1,4 +1,4 @@
-# Fisio Centro — Reserva de turnos
+# Motio Rehab — Reserva de turnos
 
 App web para que los pacientes reserven turnos viendo la agenda real y la clínica gestione la semana.
 

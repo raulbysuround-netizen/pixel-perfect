@@ -96,4 +96,4 @@ export function lunesDe(s: string) {
 }
 export const semana = (lunes: string) => [0, 1, 2, 3, 4].map((i) => addDias(lunes, i));
 export const etiquetaDia = (s: string, opts: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" }) =>
-  parseFecha(s).toLocaleDateString("es-ES", opts);
+  parseFecha(s).toLocaleDateString("es-MX", opts);
