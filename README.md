@@ -34,4 +34,9 @@ Edita `src/lib/config.ts` → `ADMIN_PASSWORD` (por defecto `fisio2026`).
 Nota: al ser una app sin servidor, la clave protege la pantalla pero no es seguridad real; los datos viven en cada navegador.
 
 ## Entrega
-Proyecto en Lovable. Para dar acceso a Kodarvia: invita a **partners@kodarvia.com** como colaborador desde la configuración del proyecto (o transfiere el proyecto). La URL de previsualización está arriba.
+
+**Opción A — por Lovable (más directa).** Desde el botón **Share** (arriba a la derecha) invita a **partners@kodarvia.com** con rol *Editor* (o *Viewer* para solo revisar). La URL de previsualización de arriba se abre iniciando sesión en Lovable con la cuenta invitada.
+
+**Opción B — con GitHub (revisión automática del código).** En el menú **(+)** del cuadro de chat → **GitHub** → **Connect project**, y luego invita al usuario de GitHub **@kodarvia** como colaborador del repositorio. El código se sincroniza solo en ambas direcciones.
+
+Ambas opciones dejan la app visible en la URL de previsualización; no hace falta publicar el proyecto para la revisión.
