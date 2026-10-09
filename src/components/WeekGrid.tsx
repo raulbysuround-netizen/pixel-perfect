@@ -11,7 +11,7 @@ export function SemanaNav({ lunes, prev, next, hoy }: ReturnType<typeof useSeman
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="font-display text-lg font-semibold">
-        {etiquetaDia(dias[0], { day: "numeric", month: "long" })} – {etiquetaDia(dias[4], { day: "numeric", month: "long" })}
+        {etiquetaDia(dias[0]!, { day: "numeric", month: "long" })} – {etiquetaDia(dias[4]!, { day: "numeric", month: "long" })}
       </p>
       <div className="flex gap-2">
         <button onClick={prev} className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-secondary">← Anterior</button>

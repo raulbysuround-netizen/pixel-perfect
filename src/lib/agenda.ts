@@ -25,7 +25,7 @@ const PASO = 30;
 const toHM = (m: number) =>
   `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const toMin = (hm: string) => {
-  const [h, m] = hm.split(":").map(Number);
+  const [h = 0, m = 0] = hm.split(":").map(Number);
   return h * 60 + m;
 };
 
@@ -78,7 +78,7 @@ export function puedeReservar(
 
 // ---- Fechas (locales) ----
 export const parseFecha = (s: string) => {
-  const [y, m, d] = s.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 };
 export const fmtFecha = (d: Date) =>

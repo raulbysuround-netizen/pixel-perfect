@@ -27,7 +27,7 @@ function Reservar() {
   const [hidratado, setHidratado] = useState(false);
   useEffect(() => setHidratado(true), []);
   const dias = useMemo(() => (hidratado ? proximosDias(10) : []), [hidratado]);
-  const [terapiaId, setTerapiaId] = useState(TERAPIAS[0].id);
+  const [terapiaId, setTerapiaId] = useState(TERAPIAS[0]!.id);
   const [fecha, setFecha] = useState<string>("");
   const [hora, setHora] = useState<string | null>(null);
   const [form, setForm] = useState({ nombre: "", telefono: "", motivo: "" });
