@@ -57,6 +57,10 @@ function subscribe(l: () => void) {
 
 export const useReservas = () => useSyncExternalStore(subscribe, load, () => EMPTY);
 
+export function reiniciarDatos() {
+  save(seed());
+}
+
 type Res = { ok: true } | { ok: false; error: string };
 
 export function crearReserva(input: Omit<Reserva, "id" | "estado">): Res {

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FRANJAS, etiquetaDia, franjasDe, puedeReservar, semana, terapiaById, type Reserva } from "@/lib/agenda";
 import { ADMIN_PASSWORD } from "@/lib/config";
-import { cancelarReserva, moverReserva, useReservas } from "@/lib/store";
+import { cancelarReserva, moverReserva, reiniciarDatos, useReservas } from "@/lib/store";
 import { SemanaNav, WeekGrid, useSemana } from "@/components/WeekGrid";
 
 export const Route = createFileRoute("/admin")({
@@ -55,7 +55,11 @@ function Panel({ onSalir }: { onSalir: () => void }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold sm:text-3xl">Panel de la clínica</h1>
-        <button onClick={onSalir} className="rounded-lg border border-border px-3 py-2 text-sm">Cerrar sesión</button>
+        <div className="flex gap-2">
+          <button onClick={() => { if (confirm("¿Reiniciar los datos de ejemplo? Se borran los turnos actuales.")) reiniciarDatos(); }}
+            className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-secondary">Reiniciar datos</button>
+          <button onClick={onSalir} className="rounded-lg border border-border px-3 py-2 text-sm">Cerrar sesión</button>
+        </div>
       </div>
       <SemanaNav {...s} />
       <WeekGrid lunes={s.lunes} cell={(f, h) => {
