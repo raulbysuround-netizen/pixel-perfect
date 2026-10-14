@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FRANJAS, TERAPIAS, addDias, esDiaLaborable, etiquetaDia, fmtFecha, ocupadas, puedeReservar } from "@/lib/agenda";
 import { crearReserva, useReservas } from "@/lib/store";
+import { avisosDe, type Aviso } from "@/lib/notificaciones";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,6 +34,7 @@ function Reservar() {
   const [form, setForm] = useState({ nombre: "", telefono: "", motivo: "" });
   const [error, setError] = useState("");
   const [confirmado, setConfirmado] = useState<string | null>(null);
+  const [avisos, setAvisos] = useState<Aviso[]>([]);
   const terapia = TERAPIAS.find((t) => t.id === terapiaId)!;
   const fechaSel = fecha || dias[0] || "";
   const occ = fechaSel ? ocupadas(reservas, fechaSel) : new Set<string>();
@@ -46,6 +48,7 @@ function Reservar() {
     if (!hora) return;
     const r = crearReserva({ terapiaId, fecha: fechaSel, horaInicio: hora, ...form });
     if (!r.ok) return setError(r.error);
+    setAvisos(avisosDe(r.reserva));
     setConfirmado(`${terapia.nombre} · ${etiquetaDia(fechaSel, { weekday: "long", day: "numeric", month: "long" })} a las ${hora}`);
     setHora(null); setForm({ nombre: "", telefono: "", motivo: "" }); setError("");
   };
@@ -91,7 +94,7 @@ function Reservar() {
             {fechaSel && FRANJAS.map((h) => {
               const libre = !yaPaso(h) && puedeReservar(reservas, fechaSel, h, terapia.duracionMinutos);
               return (
-                <button key={h} disabled={!libre} onClick={() => { setHora(h); setConfirmado(null); setError(""); }}
+                <button key={h} disabled={!libre} onClick={() => { setHora(h); setConfirmado(null); setAvisos([]); setError(""); }}
                   aria-label={`${h} ${libre ? "libre" : "ocupado"}`}
                   className={`rounded-lg border py-2.5 text-sm font-medium tabular-nums transition ${
                     hora === h ? "border-accent bg-accent text-accent-foreground"
@@ -114,8 +117,22 @@ function Reservar() {
                 <p className="font-display font-bold text-accent-foreground">¡Turno confirmado!</p>
                 <p className="mt-1 text-sm capitalize-first">{confirmado}</p>
               </div>
+              {avisos.length > 0 && (
+                <div className="rounded-xl border border-dashed border-border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Avisos automáticos · simulados</p>
+                  <ul className="mt-2 space-y-2">
+                    {avisos.map((a) => (
+                      <li key={a.id} className="text-sm">
+                        <p className="font-medium">{a.canal} <span className="font-normal text-muted-foreground">· {a.horaPrevista}</span></p>
+                        <p className="mt-0.5 text-muted-foreground">{a.texto}</p>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-xs text-muted-foreground">En esta demo no se envía nada: no hay correo, WhatsApp ni pagos conectados.</p>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">Si no puedes venir, llámanos para liberar el hueco.</p>
-              <button onClick={() => setConfirmado(null)} className="text-sm font-medium text-primary underline">Reservar otro turno</button>
+              <button onClick={() => { setConfirmado(null); setAvisos([]); }} className="text-sm font-medium text-primary underline">Reservar otro turno</button>
             </div>
           ) : hora ? (
             <form onSubmit={enviar} noValidate className="space-y-4">
