@@ -15,7 +15,9 @@ describe("avisos simulados", () => {
     expect(a.every((x) => x.estado === "simulado")).toBe(true);
   });
   it("los mensajes llevan la terapia, la hora y el teléfono del paciente", () => {
-    const [sms, wa] = avisosDe(r);
+    const avisos = avisosDe(r);
+    const sms = avisos[0]!;
+    const wa = avisos[1]!;
     expect(sms.texto.startsWith("Motio Rehab")).toBe(true);
     expect(sms.texto).toContain("Evaluación inicial");
     expect(sms.texto).toContain("09:00");
@@ -23,7 +25,7 @@ describe("avisos simulados", () => {
     expect(wa.texto).toContain("recordamos");
   });
   it("el recordatorio sale 24 h antes del turno", () => {
-    const prev = avisosDe(r)[1].horaPrevista;
+    const prev = avisosDe(r)[1]!.horaPrevista;
     expect(prev).toContain("24 h antes");
     expect(prev).toMatch(/\b11\b/);
   });
