@@ -55,7 +55,7 @@ function Reservar() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-      <section className="space-y-8">
+      <section className="min-w-0 space-y-8">
         <div className="rounded-2xl bg-hero p-6 text-primary-foreground sm:p-8">
           <h1 className="text-2xl font-bold sm:text-3xl">Reserva tu turno</h1>
           <p className="mt-2 max-w-lg opacity-90">Ves nuestra agenda real: elige la terapia, el día y una hora libre. Te esperamos.</p>
@@ -109,7 +109,7 @@ function Reservar() {
         </div>
       </section>
 
-      <aside className="lg:sticky lg:top-24 lg:self-start">
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
           {confirmado ? (
             <div role="status" className="space-y-3">
