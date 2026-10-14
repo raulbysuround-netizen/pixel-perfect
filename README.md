@@ -18,7 +18,9 @@ bunx vitest run  # pruebas de reglas de agenda
 
 ## Qué está simulado
 - **Sin backend:** todo se guarda en el `localStorage` del navegador (claves `fisio.reservas.v1` y `fisio.terapias.v1`). Kodarvia integrará backend, políticas y despliegue.
-- **Sin servicios externos:** no hay correo, WhatsApp ni pagos conectados; la confirmación del turno es local.
+- **Avisos automáticos (SMS y WhatsApp):** la lógica está escrita en `src/lib/notificaciones.ts` (con pruebas en `src/test/notificaciones.test.ts`) y se ve en pantalla, pero **no se envía nada**. Cada turno activo genera dos avisos simulados: un **SMS de confirmación** al confirmar y un **WhatsApp de recordatorio 24 h antes**. Al cancelar se genera un **SMS de cancelación**. Los tres van dirigidos al teléfono que escribió el paciente y aparecen marcados como *simulados* en la confirmación pública y en `/admin` (botón **Avisos** de cada turno y la lista **Cancelados esta semana**).
+- **Correo:** no se simula ningún envío porque el formulario de reserva no pide correo al paciente.
+- **Pagos:** no hay cobros ni pasarela. La app no pide tarjeta, no muestra precios y no hace ningún cargo: el turno se confirma sin pago.
 - **Datos de ejemplo:** la primera vez se crean 5 reservas ficticias en la semana actual (Lucía Fernández, Marcos Díaz, Elena Ruiz, Javier Moreno, Carmen López), con teléfonos mexicanos inventados.
 
 ## Reiniciar los datos de ejemplo

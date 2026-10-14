@@ -61,7 +61,7 @@ export function reiniciarDatos() {
   save(seed());
 }
 
-type Res = { ok: true } | { ok: false; error: string };
+type Res = { ok: true; reserva: Reserva } | { ok: false; error: string };
 
 export function crearReserva(input: Omit<Reserva, "id" | "estado">): Res {
   if (!input.nombre.trim() || !input.telefono.trim()) return { ok: false, error: "Nombre y teléfono son obligatorios." };
@@ -70,8 +70,9 @@ export function crearReserva(input: Omit<Reserva, "id" | "estado">): Res {
   const all = load();
   if (!puedeReservar(all, input.fecha, input.horaInicio, t.duracionMinutos))
     return { ok: false, error: "Esa franja ya no está disponible." };
-  save([...all, { ...input, nombre: input.nombre.trim(), telefono: input.telefono.trim(), id: crypto.randomUUID(), estado: "activa" }]);
-  return { ok: true };
+  const reserva: Reserva = { ...input, nombre: input.nombre.trim(), telefono: input.telefono.trim(), id: crypto.randomUUID(), estado: "activa" };
+  save([...all, reserva]);
+  return { ok: true, reserva };
 }
 
 export function cancelarReserva(id: string) {
@@ -84,6 +85,7 @@ export function moverReserva(id: string, fecha: string, horaInicio: string): Res
   const t = r && terapiaById(r.terapiaId);
   if (!r || !t) return { ok: false, error: "Turno no encontrado." };
   if (!puedeReservar(all, fecha, horaInicio, t.duracionMinutos, id)) return { ok: false, error: "Esa franja no está libre." };
-  save(all.map((x) => (x.id === id ? { ...x, fecha, horaInicio } : x)));
-  return { ok: true };
+  const movido: Reserva = { ...r, fecha, horaInicio };
+  save(all.map((x) => (x.id === id ? movido : x)));
+  return { ok: true, reserva: movido };
 }

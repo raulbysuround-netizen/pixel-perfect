@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FRANJAS, etiquetaDia, franjasDe, puedeReservar, semana, terapiaById, type Reserva } from "@/lib/agenda";
 import { ADMIN_PASSWORD } from "@/lib/config";
 import { cancelarReserva, moverReserva, reiniciarDatos, useReservas } from "@/lib/store";
+import { avisoCancelacion, avisosDe } from "@/lib/notificaciones";
 import { SemanaNav, WeekGrid, useSemana } from "@/components/WeekGrid";
 
 export const Route = createFileRoute("/admin")({
@@ -49,6 +50,8 @@ function Panel({ onSalir }: { onSalir: () => void }) {
   const dias = semana(s.lunes);
   const activas = reservas.filter((r) => r.estado === "activa" && dias.includes(r.fecha))
     .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio));
+  const cancelados = reservas.filter((r) => r.estado === "cancelada" && dias.includes(r.fecha))
+    .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio));
   const enCelda = (f: string, h: string) => activas.find((r) => r.fecha === f && franjasDe(r.horaInicio, terapiaById(r.terapiaId)?.duracionMinutos ?? 30).includes(h));
 
   return (
@@ -75,6 +78,23 @@ function Panel({ onSalir }: { onSalir: () => void }) {
           {activas.map((r) => <TurnoItem key={r.id} r={r} reservas={reservas} dias={dias} />)}
         </ul>
       </section>
+      {cancelados.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">Cancelados esta semana ({cancelados.length})</h2>
+          <ul className="space-y-3">
+            {cancelados.map((r) => {
+              const a = avisoCancelacion(r);
+              return (
+                <li key={r.id} className="rounded-xl border border-dashed border-border bg-card p-4">
+                  <p className="font-semibold capitalize">{r.nombre} <span className="font-normal text-muted-foreground">· {etiquetaDia(r.fecha, { weekday: "long", day: "numeric", month: "short" })} · {r.horaInicio}</span></p>
+                  <p className="mt-1 text-sm text-muted-foreground">{a.canal} simulado · {a.texto}</p>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">Estos avisos no se envían: la lógica está en src/lib/notificaciones.ts y Kodarvia la conectará al servicio real.</p>
+        </section>
+      )}
     </div>
   );
 }
@@ -82,6 +102,7 @@ function Panel({ onSalir }: { onSalir: () => void }) {
 function TurnoItem({ r, reservas, dias }: { r: Reserva; reservas: Reserva[]; dias: string[] }) {
   const t = terapiaById(r.terapiaId);
   const [moviendo, setMoviendo] = useState(false);
+  const [viendoAvisos, setViendoAvisos] = useState(false);
   const [fecha, setFecha] = useState(r.fecha);
   const [hora, setHora] = useState("");
   const [err, setErr] = useState("");
@@ -96,6 +117,7 @@ function TurnoItem({ r, reservas, dias }: { r: Reserva; reservas: Reserva[]; dia
         </div>
         <div className="flex gap-2">
           <button onClick={() => setMoviendo((v) => !v)} className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-secondary">Mover</button>
+          <button onClick={() => setViendoAvisos((v) => !v)} className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-secondary">Avisos</button>
           <button onClick={() => { if (confirm(`¿Cancelar el turno de ${r.nombre}?`)) cancelarReserva(r.id); }}
             className="rounded-lg bg-destructive px-3 py-2 text-sm text-destructive-foreground">Cancelar turno</button>
         </div>
@@ -117,6 +139,16 @@ function TurnoItem({ r, reservas, dias }: { r: Reserva; reservas: Reserva[]; dia
             className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50">Guardar</button>
           {err && <p className="w-full text-sm text-destructive">{err}</p>}
         </div>
+      )}
+      {viendoAvisos && (
+        <ul className="mt-3 space-y-2 border-t border-border pt-3">
+          {avisosDe(r).map((a) => (
+            <li key={a.id} className="text-sm">
+              <p className="font-medium">{a.canal} <span className="font-normal text-muted-foreground">· {a.horaPrevista} · simulado</span></p>
+              <p className="mt-0.5 text-muted-foreground">{a.texto}</p>
+            </li>
+          ))}
+        </ul>
       )}
     </li>
   );
