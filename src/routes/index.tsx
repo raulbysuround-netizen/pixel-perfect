@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { FRANJAS, TERAPIAS, addDias, esDiaLaborable, etiquetaDia, fmtFecha, ocupadas, puedeReservar } from "@/lib/agenda";
+import { FRANJAS, TERAPIAS, addDias, esDiaLaborable, etiquetaDia, fmtFecha, ocupadas, puedeReservar, limpiarTelefono, telefonoValido } from "@/lib/agenda";
 import { crearReserva, useReservas } from "@/lib/store";
-import { avisosDe, type Aviso } from "@/lib/notificaciones";
+import { resumenWhatsApp } from "@/lib/notificaciones";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -11,6 +13,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Elige terapia, día y hora libre y confirma tu turno en menos de un minuto." },
       { property: "og:title", content: "Reserva tu turno de fisioterapia — Motio Rehab" },
       { property: "og:description", content: "Elige terapia, día y hora libre y confirma tu turno en menos de un minuto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Reservar,
@@ -28,27 +32,30 @@ function Reservar() {
   const [hidratado, setHidratado] = useState(false);
   useEffect(() => setHidratado(true), []);
   const dias = useMemo(() => (hidratado ? proximosDias(10) : []), [hidratado]);
-  const [terapiaId, setTerapiaId] = useState(TERAPIAS[0]!.id);
+  const [terapiaId, setTerapiaId] = useState(TERAPIAS[0]?.id ?? "");
   const [fecha, setFecha] = useState<string>("");
   const [hora, setHora] = useState<string | null>(null);
   const [form, setForm] = useState({ nombre: "", telefono: "", motivo: "" });
   const [error, setError] = useState("");
   const [confirmado, setConfirmado] = useState<string | null>(null);
-  const [avisos, setAvisos] = useState<Aviso[]>([]);
-  const terapia = TERAPIAS.find((t) => t.id === terapiaId)!;
+  const [whatsapp, setWhatsapp] = useState("");
+  const terapia = TERAPIAS.find((t) => t.id === terapiaId);
   const fechaSel = fecha || dias[0] || "";
   const occ = fechaSel ? ocupadas(reservas, fechaSel) : new Set<string>();
   const ahora = new Date();
   const esHoy = fechaSel === fmtFecha(ahora);
   const yaPaso = (h: string) => esHoy && Number(h.slice(0, 2)) * 60 + Number(h.slice(3)) <= ahora.getHours() * 60 + ahora.getMinutes();
 
+  if (!terapia) return null;
+
   const enviar = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nombre.trim() || !form.telefono.trim()) return setError("Completa tu nombre y teléfono.");
+    if (!telefonoValido(form.telefono)) return setError("El teléfono debe contener números, sin letras.");
     if (!hora) return;
     const r = crearReserva({ terapiaId, fecha: fechaSel, horaInicio: hora, ...form });
     if (!r.ok) return setError(r.error);
-    setAvisos(avisosDe(r.reserva));
+    setWhatsapp(resumenWhatsApp(r.reserva));
     setConfirmado(`${terapia.nombre} · ${etiquetaDia(fechaSel, { weekday: "long", day: "numeric", month: "long" })} a las ${hora}`);
     setHora(null); setForm({ nombre: "", telefono: "", motivo: "" }); setError("");
   };
@@ -65,11 +72,11 @@ function Reservar() {
           <h2 className="mb-3 text-lg font-semibold">1. Tipo de terapia</h2>
           <div className="grid gap-3 sm:grid-cols-3">
             {TERAPIAS.map((t) => (
-              <button key={t.id} onClick={() => { setTerapiaId(t.id); setHora(null); }}
+              <Button key={t.id} onClick={() => { setTerapiaId(t.id); setHora(null); }}
                 className={`rounded-xl border-2 p-4 text-left transition ${t.id === terapiaId ? "border-primary bg-secondary" : "border-border bg-card hover:border-ring"}`}>
                 <span className="block font-semibold">{t.nombre}</span>
                 <span className="text-sm text-muted-foreground">{t.duracionMinutos} min</span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -78,12 +85,12 @@ function Reservar() {
           <h2 className="mb-3 text-lg font-semibold">2. Día</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {dias.map((d) => (
-              <button key={d} onClick={() => { setFecha(d); setHora(null); }}
+              <Button key={d} onClick={() => { setFecha(d); setHora(null); }}
                 className={`shrink-0 rounded-xl border px-4 py-3 text-center capitalize ${d === fechaSel ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-secondary"}`}>
                 <span className="block text-xs">{etiquetaDia(d, { weekday: "short" })}</span>
                 <span className="block font-display text-lg font-bold">{etiquetaDia(d, { day: "numeric" })}</span>
                 <span className="block text-xs">{etiquetaDia(d, { month: "short" })}</span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -94,14 +101,14 @@ function Reservar() {
             {fechaSel && FRANJAS.map((h) => {
               const libre = !yaPaso(h) && puedeReservar(reservas, fechaSel, h, terapia.duracionMinutos);
               return (
-                <button key={h} disabled={!libre} onClick={() => { setHora(h); setConfirmado(null); setAvisos([]); setError(""); }}
+                <Button key={h} disabled={!libre} onClick={() => { setHora(h); setConfirmado(null); setWhatsapp(""); setError(""); }}
                   aria-label={`${h} ${libre ? "libre" : "ocupado"}`}
                   className={`rounded-lg border py-2.5 text-sm font-medium tabular-nums transition ${
                     hora === h ? "border-accent bg-accent text-accent-foreground"
                     : libre ? "border-border bg-card hover:border-accent hover:bg-accent-soft"
                     : "cursor-not-allowed border-transparent bg-busy text-busy-foreground line-through"}`}>
                   {h}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -117,22 +124,11 @@ function Reservar() {
                 <p className="font-display font-bold text-accent-foreground">¡Turno confirmado!</p>
                 <p className="mt-1 text-sm capitalize-first">{confirmado}</p>
               </div>
-              {avisos.length > 0 && (
-                <div className="rounded-xl border border-dashed border-border p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Avisos automáticos · simulados</p>
-                  <ul className="mt-2 space-y-2">
-                    {avisos.map((a) => (
-                      <li key={a.id} className="text-sm">
-                        <p className="font-medium">{a.canal} <span className="font-normal text-muted-foreground">· {a.horaPrevista}</span></p>
-                        <p className="mt-0.5 text-muted-foreground">{a.texto}</p>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 text-xs text-muted-foreground">En esta demo no se envía nada: no hay correo, WhatsApp ni pagos conectados.</p>
-                </div>
-              )}
+              <Button asChild className="h-auto w-full whitespace-normal py-3">
+                <a href={whatsapp} target="_blank" rel="noopener noreferrer"><MessageCircle />Enviar resumen por WhatsApp</a>
+              </Button>
               <p className="text-sm text-muted-foreground">Si no puedes venir, llámanos para liberar el hueco.</p>
-              <button onClick={() => { setConfirmado(null); setAvisos([]); }} className="text-sm font-medium text-primary underline">Reservar otro turno</button>
+              <Button onClick={() => { setConfirmado(null); setWhatsapp(""); }} className="text-sm font-medium text-primary underline">Reservar otro turno</Button>
             </div>
           ) : hora ? (
             <form onSubmit={enviar} noValidate className="space-y-4">
@@ -144,17 +140,17 @@ function Reservar() {
                 <input className="input-field mt-1" value={form.nombre} required onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
               </label>
               <label className="block text-sm font-medium">Teléfono *
-                <input className="input-field mt-1" type="tel" value={form.telefono} required onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+                <input className="input-field mt-1" type="tel" inputMode="tel" value={form.telefono} required onChange={(e) => setForm({ ...form, telefono: limpiarTelefono(e.target.value) })} />
               </label>
               <label className="block text-sm font-medium">Motivo de consulta <span className="text-muted-foreground">(opcional)</span>
                 <textarea className="input-field mt-1" rows={3} value={form.motivo} onChange={(e) => setForm({ ...form, motivo: e.target.value })} />
               </label>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <button type="submit" disabled={!form.nombre.trim() || !form.telefono.trim()}
+              <Button type="submit" disabled={!form.nombre.trim() || !telefonoValido(form.telefono)}
                 className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50">
                 Confirmar turno
-              </button>
-              <button type="button" onClick={() => setHora(null)} className="w-full text-sm text-muted-foreground">Cambiar hora</button>
+              </Button>
+              <Button type="button" onClick={() => setHora(null)} className="w-full text-sm text-muted-foreground">Cambiar hora</Button>
             </form>
           ) : (
             <div>
