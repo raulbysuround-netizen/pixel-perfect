@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type Reserva } from "@/lib/agenda";
-import { avisoCancelacion, avisosDe } from "@/lib/notificaciones";
+import { avisoCancelacion, avisosDe, resumenWhatsApp } from "@/lib/notificaciones";
 
 const r: Reserva = {
   id: "t1", terapiaId: "evaluacion", fecha: "2026-10-12", horaInicio: "09:00",
@@ -8,6 +8,14 @@ const r: Reserva = {
 };
 
 describe("avisos simulados", () => {
+  it("WhatsApp abre el selector con resumen sin destinatario inventado", () => {
+    const url = new URL(resumenWhatsApp(r));
+    expect(url.origin).toBe("https://wa.me");
+    expect(url.pathname).toBe("/");
+    expect(url.searchParams.get("text")).toContain("2026-10-12");
+    expect(url.searchParams.get("text")).toContain("09:00");
+    expect(url.searchParams.get("text")).toContain("Lucía Fernández");
+  });
   it("un turno activo genera un SMS de confirmación y un WhatsApp de recordatorio", () => {
     const a = avisosDe(r);
     expect(a.map((x) => x.canal)).toEqual(["SMS", "WhatsApp"]);

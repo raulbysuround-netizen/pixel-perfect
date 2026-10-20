@@ -11,5 +11,7 @@
 
 ## Project rules
 - Scheduling rules live as pure functions in src/lib/agenda.ts (tested in src/test/agenda.test.ts); localStorage access only in src/lib/store.ts — keeps rules testable and storage swappable.
-- Simulated outbound messages (SMS/WhatsApp) are built by pure functions in src/lib/notificaciones.ts and only rendered in the UI — no service is ever called, so the demo can't send anything by accident.
+- Message templates and manual WhatsApp share URLs are pure functions in src/lib/notificaciones.ts; automated messages never call services, and manual sharing requires user confirmation in WhatsApp.
 - Bookings occupy ceil(duration/30) consecutive slots within one block — prevents overlaps for 45-min sessions.
+- Store blocked slots as reservation records with a blocked status and a 30-minute fallback duration; attended records remain occupied — all availability paths share the same rules.
+- Storage failures keep in-memory data and expose a global warning through the store hook — users must know reloads can lose changes.
