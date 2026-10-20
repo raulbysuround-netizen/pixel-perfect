@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { useAlmacenamientoBloqueado } from "@/lib/store";
 
 function NotFoundComponent() {
   return (
@@ -87,6 +88,7 @@ const navActive = { className: "bg-secondary text-secondary-foreground" };
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const almacenamientoBloqueado = useAlmacenamientoBloqueado();
   return (
     <QueryClientProvider client={queryClient}>
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur">
@@ -94,14 +96,16 @@ function RootComponent() {
           <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold text-primary">
             <span className="inline-block h-3 w-3 rounded-full bg-accent" /> Motio Rehab
           </Link>
-          <nav className="flex gap-1">
+          <nav className="flex flex-wrap gap-1">
             <Link to="/" className={navCls} activeProps={navActive} activeOptions={{ exact: true }}>Reservar</Link>
             <Link to="/agenda" className={navCls} activeProps={navActive}>Agenda</Link>
             <Link to="/admin" className={navCls} activeProps={navActive}>Clínica</Link>
+            <Link to="/centro" className={navCls} activeProps={navActive}>El centro</Link>
           </nav>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">
+        {almacenamientoBloqueado && <p role="alert" className="mb-6 rounded-lg border border-destructive bg-card p-4 text-sm text-destructive">El almacenamiento de tu navegador está bloqueado o no tiene espacio. Los cambios solo se mantienen mientras esta página siga abierta y pueden perderse al recargar. Habilita el almacenamiento para conservarlos.</p>}
         <Outlet />
       </main>
     </QueryClientProvider>

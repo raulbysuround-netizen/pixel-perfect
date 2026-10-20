@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   TERAPIAS,
   addDias,
@@ -6,6 +6,7 @@ import {
   lunesDe,
   puedeReservar,
   terapiaById,
+  telefonoValido,
   type Reserva,
 } from "./agenda";
 
@@ -13,6 +14,7 @@ const KEY = "fisio.reservas.v1";
 const KEY_T = "fisio.terapias.v1";
 const EMPTY: Reserva[] = [];
 let cache: Reserva[] | null = null;
+let almacenamientoBloqueado = false;
 const listeners = new Set<() => void>();
 
 function seed(): Reserva[] {
@@ -37,14 +39,15 @@ function load(): Reserva[] {
     if (!raw) localStorage.setItem(KEY, JSON.stringify(cache));
     if (!localStorage.getItem(KEY_T)) localStorage.setItem(KEY_T, JSON.stringify(TERAPIAS));
   } catch {
-    cache = seed();
+    cache ??= seed();
+    almacenamientoBloqueado = true;
   }
   return cache;
 }
 
 function save(next: Reserva[]) {
   cache = next;
-  try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  try { localStorage.setItem(KEY, JSON.stringify(next)); almacenamientoBloqueado = false; } catch { almacenamientoBloqueado = true; }
   listeners.forEach((l) => l());
 }
 
@@ -57,6 +60,12 @@ function subscribe(l: () => void) {
 
 export const useReservas = () => useSyncExternalStore(subscribe, load, () => EMPTY);
 
+export function useAlmacenamientoBloqueado() {
+  const bloqueado = useSyncExternalStore(subscribe, () => almacenamientoBloqueado, () => false);
+  useEffect(() => { load(); listeners.forEach((l) => l()); }, []);
+  return bloqueado;
+}
+
 export function reiniciarDatos() {
   save(seed());
 }
@@ -65,6 +74,7 @@ type Res = { ok: true; reserva: Reserva } | { ok: false; error: string };
 
 export function crearReserva(input: Omit<Reserva, "id" | "estado">): Res {
   if (!input.nombre.trim() || !input.telefono.trim()) return { ok: false, error: "Nombre y teléfono son obligatorios." };
+  if (!telefonoValido(input.telefono)) return { ok: false, error: "El teléfono debe contener números, sin letras." };
   const t = terapiaById(input.terapiaId);
   if (!t) return { ok: false, error: "Tipo de terapia no válido." };
   const all = load();
@@ -76,14 +86,26 @@ export function crearReserva(input: Omit<Reserva, "id" | "estado">): Res {
 }
 
 export function cancelarReserva(id: string) {
-  save(load().map((r) => (r.id === id ? { ...r, estado: "cancelada" as const } : r)));
+  save(load().map((r) => (r.id === id && (r.estado === "activa" || r.estado === "bloqueada") ? { ...r, estado: "cancelada" as const } : r)));
+}
+
+export function atenderReserva(id: string) {
+  save(load().map((r) => r.id === id && r.estado === "activa" ? { ...r, estado: "atendida" as const } : r));
+}
+
+export function bloquearHora(fecha: string, horaInicio: string): Res {
+  const all = load();
+  if (!puedeReservar(all, fecha, horaInicio, 30)) return { ok: false, error: "Solo puedes bloquear una franja libre de 30 minutos." };
+  const reserva: Reserva = { id: crypto.randomUUID(), terapiaId: "bloqueo", fecha, horaInicio, nombre: "Hora bloqueada", telefono: "", estado: "bloqueada" };
+  save([...all, reserva]);
+  return { ok: true, reserva };
 }
 
 export function moverReserva(id: string, fecha: string, horaInicio: string): Res {
   const all = load();
   const r = all.find((x) => x.id === id);
   const t = r && terapiaById(r.terapiaId);
-  if (!r || !t) return { ok: false, error: "Turno no encontrado." };
+  if (!r || !t || r.estado !== "activa") return { ok: false, error: "Solo se pueden mover turnos activos." };
   if (!puedeReservar(all, fecha, horaInicio, t.duracionMinutos, id)) return { ok: false, error: "Esa franja no está libre." };
   const movido: Reserva = { ...r, fecha, horaInicio };
   save(all.map((x) => (x.id === id ? movido : x)));

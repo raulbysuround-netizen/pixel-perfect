@@ -8,7 +8,7 @@ export type Reserva = {
   nombre: string;
   telefono: string;
   motivo?: string;
-  estado: "activa" | "cancelada";
+  estado: "activa" | "cancelada" | "atendida" | "bloqueada";
 };
 
 export const TERAPIAS: Terapia[] = [
@@ -47,7 +47,7 @@ export function franjasDe(horaInicio: string, duracion: number): string[] {
 export function ocupadas(reservas: Reserva[], fecha: string, excluirId?: string): Set<string> {
   const set = new Set<string>();
   for (const r of reservas) {
-    if (r.estado !== "activa" || r.fecha !== fecha || r.id === excluirId) continue;
+    if (r.estado === "cancelada" || r.fecha !== fecha || r.id === excluirId) continue;
     const t = terapiaById(r.terapiaId);
     franjasDe(r.horaInicio, t?.duracionMinutos ?? PASO).forEach((f) => set.add(f));
   }
@@ -58,6 +58,9 @@ export function esDiaLaborable(fecha: string) {
   const d = parseFecha(fecha).getDay();
   return d >= 1 && d <= 5;
 }
+
+export const limpiarTelefono = (telefono: string) => telefono.replace(/[^0-9+()\s-]/g, "");
+export const telefonoValido = (telefono: string) => /^[+()\d\s-]+$/.test(telefono) && /\d/.test(telefono);
 
 export function puedeReservar(
   reservas: Reserva[],

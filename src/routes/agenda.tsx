@@ -10,6 +10,8 @@ export const Route = createFileRoute("/agenda")({
       { name: "description", content: "Consulta qué franjas están libres esta semana en Motio Rehab." },
       { property: "og:title", content: "Agenda semanal — Motio Rehab" },
       { property: "og:description", content: "Consulta qué franjas están libres esta semana en Motio Rehab." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Agenda,
@@ -19,7 +21,7 @@ function Agenda() {
   const reservas = useReservas();
   const s = useSemana();
   const cache = new Map<string, Set<string>>();
-  const occ = (f: string) => cache.get(f) ?? (cache.set(f, ocupadas(reservas, f)), cache.get(f)!);
+  const occ = (f: string) => { const existing = cache.get(f); if (existing) return existing; const next = ocupadas(reservas, f); cache.set(f, next); return next; };
   return (
     <div className="space-y-6">
       <div>
@@ -28,7 +30,7 @@ function Agenda() {
       </div>
       <SemanaNav {...s} />
       <WeekGrid lunes={s.lunes} cell={(f, h) => occ(f).has(h)
-        ? <span className="block rounded-md bg-busy px-2 py-1.5 text-xs text-busy-foreground">Ocupado</span>
+        ? <span className="block rounded-md bg-busy px-2 py-1.5 text-xs text-busy-foreground">{reservas.some((r) => r.fecha === f && r.horaInicio === h && r.estado === "bloqueada") ? "Bloqueado" : "Ocupado"}</span>
         : <span className="block rounded-md bg-accent-soft px-2 py-1.5 text-xs font-medium text-accent-foreground">Libre</span>} />
     </div>
   );

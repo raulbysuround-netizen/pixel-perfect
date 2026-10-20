@@ -20,6 +20,12 @@ export type Aviso = {
 const diaLargo = (r: Reserva) => etiquetaDia(r.fecha, { weekday: "long", day: "numeric", month: "long" });
 const nombreTerapia = (r: Reserva) => terapiaById(r.terapiaId)?.nombre ?? "tu sesión";
 
+/** Abre el selector de destinatario; el usuario confirma el envío en WhatsApp. */
+export function resumenWhatsApp(r: Reserva) {
+  const texto = `Motio Rehab · Resumen de turno\nPaciente: ${r.nombre}\nTerapia: ${nombreTerapia(r)}\nFecha: ${diaLargo(r)} (${r.fecha})\nHora: ${r.horaInicio}\nTurno confirmado.`;
+  return `https://wa.me/?text=${encodeURIComponent(texto)}`;
+}
+
 /** Momento en que saldría el recordatorio: 24 h antes del turno. */
 function hace24h(fecha: string, hora: string) {
   const [h = 0, m = 0] = hora.split(":").map(Number);
