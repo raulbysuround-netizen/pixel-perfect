@@ -1,0 +1,4 @@
+- [ ] Panel: bloquear/liberar horas y marcar atendidos, con persistencia y pruebas.
+- [ ] Confirmación: WhatsApp con resumen; teléfono sin letras; aviso de almacenamiento bloqueado.
+- [ ] Página del centro: servicios y horarios de demo; enlaces reales pendientes de Kodarvia.
+- [ ] Documentar, verificar flujos y solicitar publicación pública.
